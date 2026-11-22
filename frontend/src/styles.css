@@ -12,3 +12,30 @@
 footer{min-height:83px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid #e6eae2;color:#9aa39c;font-size:9px}.footer-brand{color:var(--ink);font-size:15px}.footer-brand .brand-mark{width:27px;height:27px;font-size:17px;border-radius:9px 9px 9px 3px}.footer-year{font-size:8px}
 @media(max-width:800px){.page-shell{padding:0 5%}.hero{grid-template-columns:1fr;gap:30px;padding-top:55px}.hero-art{height:330px;max-width:560px;width:100%;margin:0 auto}h1{font-size:clamp(55px,11vw,76px)}.section-heading{align-items:start;flex-direction:column;gap:12px}.feature-grid{grid-template-columns:1fr}.feature-card{min-height:215px}.note-label{display:none}}
 @media(max-width:540px){.topbar{height:72px}.nav-note{font-size:7px;letter-spacing:.8px}.brand{font-size:17px}.hero{min-height:auto}.hero-art{height:280px}.sun-disc{width:130px;height:130px}.leaf-shape{font-size:115px}.floating-card{right:7px;bottom:52px;padding:11px 13px}.data-note{align-items:flex-start;padding:14px}.explore-section{padding:60px 0}.search-row{flex-direction:column}.search-row .primary-button{width:100%}.air-panel{padding:16px}.panel-heading{align-items:flex-start;flex-direction:column}.aqi-overview{align-items:flex-start;gap:14px}.aqi-number{min-width:94px}.aqi-number strong{font-size:40px}.pollutant-grid{grid-template-columns:repeat(2,1fr)}footer{flex-wrap:wrap;padding:19px 0}footer>span:nth-child(2){order:3;width:100%}}
+
+/* Interactive guidance tools */
+.interactive-tools{padding-top:30px}
+.tool-card{background:#fff;border:1px solid #e6eae2;border-radius:6px;padding:24px;margin-bottom:16px}
+.tool-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:end}
+.tool-card label{display:flex;flex-direction:column;gap:8px;color:var(--deep);font-size:11px;font-weight:700}
+.tool-card input:not([type=checkbox]),.tool-card select,.tool-card textarea{width:100%;min-height:43px;border:1px solid #dce4dc;border-radius:4px;padding:10px 12px;background:#fff;color:var(--ink);font:inherit;font-size:12px}
+.tool-card textarea{min-height:95px;resize:vertical}
+.tool-card input:focus-visible,.tool-card select:focus-visible,.tool-card textarea:focus-visible,.tool-card button:focus-visible,.place-option:focus-visible{outline:3px solid #df946d;outline-offset:3px}
+.check-label{flex-direction:row!important;align-items:center;min-height:43px}
+.check-label input{width:17px;height:17px;accent-color:#d78b64}
+.tool-card .primary-button{min-height:43px}
+.guidance-result,.assistant-answer,.impact-result{margin-top:20px;padding:18px;background:#f8faf6;border:1px solid #e6eae2;border-radius:5px}
+.guidance-result h3,.tool-card h3{font:700 17px 'Manrope',sans-serif;color:var(--deep);margin:0 0 10px}
+.guidance-result>p,.assistant-answer p,.impact-result p{font-size:12px;line-height:1.7;color:#68766d}
+.guidance-item{padding:14px 0;border-top:1px solid #e5eae3}
+.guidance-item strong{font-size:12px;color:var(--deep)}
+.guidance-item strong small,.guidance-item>small,.assistant-answer small,.impact-result small{font-size:10px;color:#859188;font-weight:400;line-height:1.6}
+.guidance-item p{font-size:12px;line-height:1.7;color:#65736a;margin:6px 0}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.tool-grid .tool-card{margin:0}
+.stack-form{display:grid;gap:12px;margin-top:15px}
+.stack-form label{font-size:11px}
+.impact-result>strong{font:800 27px 'Manrope',sans-serif;color:#426c50}
+.privacy-note{font-size:10px;color:#89958c;line-height:1.6}
+@media(max-width:700px){.tool-controls,.tool-grid{grid-template-columns:1fr}.tool-card{padding:18px}.tool-controls .primary-button{width:100%}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}

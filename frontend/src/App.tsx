@@ -79,60 +79,6 @@ function App() {
     }
   }
 
-  const [household, setHousehold] = useState("general");
-  const [commute, setCommute] = useState("public_transport");
-  const [hasPurifier, setHasPurifier] = useState(false);
-  const [guidance, setGuidance] = useState<any>(null);
-  const [guidanceBusy, setGuidanceBusy] = useState(false);
-  const [assistantQuestion, setAssistantQuestion] = useState("");
-  const [assistantAnswer, setAssistantAnswer] = useState<any>(null);
-  const [assistantBusy, setAssistantBusy] = useState(false);
-  const [distance, setDistance] = useState("8");
-  const [trips, setTrips] = useState("10");
-  const [alternative, setAlternative] = useState("metro");
-  const [impact, setImpact] = useState<any>(null);
-
-  async function requestGuidance() {
-    if (!air) return;
-    setGuidanceBusy(true);
-    try {
-      const response = await fetch(`${API_BASE}/api/guidance/daily`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ aqi: air.current.aqi, context: { household, commute, has_air_purifier: hasPurifier } }),
-      });
-      if (!response.ok) throw new Error("Could not generate the daily plan.");
-      setGuidance(await response.json());
-    } catch (err) { setError(err instanceof Error ? err.message : "Guidance unavailable."); }
-    finally { setGuidanceBusy(false); }
-  }
-
-  async function askAssistant(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (assistantQuestion.trim().length < 2) return;
-    setAssistantBusy(true);
-    try {
-      const response = await fetch(`${API_BASE}/api/assistant/chat`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: assistantQuestion, aqi: air?.current.aqi ?? null, city: selectedPlace?.name ?? null, context: { household, commute, has_air_purifier: hasPurifier } }),
-      });
-      if (!response.ok) throw new Error("The assistant is unavailable right now.");
-      setAssistantAnswer(await response.json());
-    } catch (err) { setAssistantAnswer({ answer: err instanceof Error ? err.message : "Please try again.", mode: "error" }); }
-    finally { setAssistantBusy(false); }
-  }
-
-  async function calculateImpact(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    try {
-      const response = await fetch(`${API_BASE}/api/impact/estimate`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ distance_km: Number(distance), trips_per_week: Number(trips), weeks: 4, alternative }),
-      });
-      if (!response.ok) throw new Error("Check your commute inputs.");
-      setImpact(await response.json());
-    } catch (err) { setImpact({ error: err instanceof Error ? err.message : "Calculation failed." }); }
-  }
-
   const categoryClass = air?.current.category.toLowerCase().replace(/[^a-z]+/g, "-") || "";
 
   return (
@@ -237,51 +183,6 @@ function App() {
           <article className="feature-card"><div className="feature-top"><span className="feature-icon">◉</span><span className="feature-index">01</span></div><p className="feature-tag">AIR INTELLIGENCE</p><h3>Know your air</h3><p className="feature-description">Explore city-level pollutant estimates with data source, timestamp, and scale clearly shown.</p></article>
           <article className="feature-card"><div className="feature-top"><span className="feature-icon">⌂</span><span className="feature-index">02</span></div><p className="feature-tag">INDOOR AIR</p><h3>Make home a cleaner-air space</h3><p className="feature-description">Get practical indoor guidance shaped by outdoor conditions and your household.</p></article>
           <article className="feature-card"><div className="feature-top"><span className="feature-icon">↗</span><span className="feature-index">03</span></div><p className="feature-tag">CLEANER ROUTINES</p><h3>Choose a smarter way to move</h3><p className="feature-description">Explore lower-emission travel options without losing sight of time and convenience.</p></article>
-        </div>
-      </section>
-      <section className="explore-section interactive-tools" id="personalize">
-        <div className="section-heading">
-          <div><p className="eyebrow">TURN DATA INTO DAILY ACTION</p><h2>Your household, <em>your air plan.</em></h2></div>
-          <p>Choose a few context details to get practical guidance. No account required.</p>
-        </div>
-        <div className="tool-card">
-          <div className="tool-controls">
-            <label>Who are you planning for?
-              <select value={household} onChange={e => setHousehold(e.target.value)}>
-                <option value="general">General household</option><option value="children">Household with children</option><option value="older_adults">Older adults</option><option value="respiratory_sensitive">Respiratory-sensitive member</option>
-              </select>
-            </label>
-            <label>Usual commute
-              <select value={commute} onChange={e => setCommute(e.target.value)}>
-                <option value="public_transport">Public transport</option><option value="walk">Walk</option><option value="cycle">Cycle</option><option value="car">Car</option><option value="work_from_home">Work from home</option>
-              </select>
-            </label>
-            <label className="check-label"><input type="checkbox" checked={hasPurifier} onChange={e => setHasPurifier(e.target.checked)} /> I have an air purifier</label>
-            <button className="primary-button" onClick={requestGuidance} disabled={!air || guidanceBusy}>{guidanceBusy ? "Building plan…" : "Build my daily plan ↗"}</button>
-          </div>
-          {!air && <p className="privacy-note">Search for a city above to unlock AQI-aware guidance.</p>}
-          {guidance && <div className="guidance-result"><h3>{guidance.category} · Daily plan</h3><p>{guidance.summary}</p>{guidance.actions.map((item: any) => <article className="guidance-item" key={item.title}><strong>{item.title} <small>· {item.when}</small></strong><p>{item.action}</p><small>{item.why}</small></article>)}<p className="privacy-note">{guidance.safety_note}</p></div>}
-        </div>
-        <div className="tool-grid">
-          <article className="tool-card">
-            <p className="feature-tag">ASK BREATHEWISE</p><h3>A practical air-quality assistant</h3>
-            <form onSubmit={askAssistant} className="stack-form">
-              <label htmlFor="assistant-question">What would you like help with?</label>
-              <textarea id="assistant-question" value={assistantQuestion} onChange={e => setAssistantQuestion(e.target.value)} maxLength={1200} placeholder="How can I reduce indoor dust exposure today?" />
-              <button className="primary-button" disabled={assistantBusy || assistantQuestion.trim().length < 2}>{assistantBusy ? "Thinking…" : "Ask assistant ↗"}</button>
-            </form>
-            {assistantAnswer && <div className="assistant-answer"><p>{assistantAnswer.answer}</p><small>Response mode: {assistantAnswer.mode}. {assistantAnswer.notice || ""}</small></div>}
-          </article>
-          <article className="tool-card">
-            <p className="feature-tag">LOWER-EMISSION COMMUTES</p><h3>Estimate a travel switch</h3>
-            <form onSubmit={calculateImpact} className="stack-form">
-              <label>One-way distance (km)<input type="number" min="0.1" max="500" step="0.1" value={distance} onChange={e => setDistance(e.target.value)} required /></label>
-              <label>One-way trips per week<input type="number" min="1" max="21" value={trips} onChange={e => setTrips(e.target.value)} required /></label>
-              <label>Alternative mode<select value={alternative} onChange={e => setAlternative(e.target.value)}><option value="metro">Metro</option><option value="bus">Bus</option><option value="carpool">Carpool</option><option value="cycle">Cycle</option><option value="walk">Walk</option></select></label>
-              <button className="primary-button">Estimate 4-week impact ↗</button>
-            </form>
-            {impact && (impact.error ? <p role="alert">{impact.error}</p> : <div className="impact-result"><strong>{impact.estimated_kg_co2e_avoided} kg CO₂e</strong><p>Estimated avoided emissions over four weeks versus a single-occupancy car.</p><small>{impact.methodology} {impact.limitations}</small></div>)}
-          </article>
         </div>
       </section>
       <footer>
