@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import "./visual-refresh.css";
 
 type Place = {
   name: string;
@@ -131,7 +132,7 @@ function App() {
           <span className="brand-mark">b.</span>
           <span>BreatheWise<span className="brand-ai"> AI</span></span>
         </a>
-        <span className="nav-note"><span className="status-dot" /> YOUR EVERYDAY AIR COMPANION</span>
+        <div className="topbar-right"><nav className="top-links" aria-label="Main navigation"><a href="#explore">Explore</a><a href="#personal-plan">My air plan</a><a href="#community">Community</a></nav><span className="nav-note"><span className="status-dot" /> LIVE AIR COMPANION</span></div>
       </nav>
 
       <section className="hero">
@@ -228,7 +229,7 @@ function App() {
           <article className="feature-card"><div className="feature-top"><span className="feature-icon">↗</span><span className="feature-index">03</span></div><p className="feature-tag">CLEANER ROUTINES</p><h3>Choose a smarter way to move</h3><p className="feature-description">Explore lower-emission travel options without losing sight of time and convenience.</p></article>
         </div>
       </section>
-      <section className="explore-section interactive-tools">
+      <section className="explore-section interactive-tools" id="personal-plan">
         <div className="section-heading"><div><p className="eyebrow">PERSONALIZED AIR ACTIONS</p><h2>Your household, <em>your air plan.</em></h2></div><p>Practical guidance based on your selected city estimate and household context.</p></div>
         <div className="tool-card">
           <div className="tool-controls">
@@ -244,7 +245,7 @@ function App() {
           <article className="tool-card"><p className="feature-tag">LOWER-EMISSION COMMUTE</p><h3>Estimate a travel switch</h3><form className="stack-form" onSubmit={calc}><label>One-way distance (km)<input type="number" min="0.1" max="500" step="0.1" value={distance} onChange={e=>setDistance(e.target.value)} required/></label><label>One-way trips per week<input type="number" min="1" max="21" value={trips} onChange={e=>setTrips(e.target.value)} required/></label><label>Alternative mode<select value={alternative} onChange={e=>setAlternative(e.target.value)}><option value="metro">Metro</option><option value="bus">Bus</option><option value="carpool">Carpool</option><option value="cycle">Cycle</option><option value="walk">Walk</option></select></label><button className="primary-button">Estimate four-week impact ↗</button></form>{impact&&(impact.error?<p role="alert">{impact.error}</p>:<div className="impact-result"><strong>{impact.estimated_kg_co2e_avoided} kg CO₂e</strong><p>Estimated emissions avoided over four weeks versus a single-occupancy car.</p><small>{impact.methodology} {impact.limitations}</small></div>)}</article>
         </div>
       </section>
-      <section className="explore-section community-section">
+      <section className="explore-section community-section" id="community">
         <div className="section-heading"><div><p className="eyebrow">BEYOND ONE HOUSEHOLD</p><h2>Cleaner air is <em>a community effort.</em></h2></div><p>Turn a city snapshot into practical, privacy-conscious steps for shared spaces.</p></div>
         <div className="tool-grid">
           <article className="tool-card">
