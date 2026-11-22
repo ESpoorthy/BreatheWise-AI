@@ -6,15 +6,25 @@ BreatheWise AI is a GenAI-powered urban air-quality assistant designed to help f
 
 > **Important:** BreatheWise AI provides general air-quality information and practical guidance. It is not a medical device, emergency service, or substitute for advice from a qualified healthcare professional or official public-health authority.
 
-## What we're building
+## Working in this starter build
 
-- **Air-quality intelligence:** location-aware AQI and pollutant readings with timestamps and source attribution.
+- **City search:** look up a city or town without granting device-location permission.
+- **Current modeled air quality:** fetch an Open-Meteo current estimate for the selected coordinates.
+- **Pollutant details:** view PM2.5, PM10, nitrogen dioxide, sulphur dioxide, ozone, and carbon monoxide where returned by the provider.
+- **Source transparency:** show provider attribution, model timestamp, data type, and limitations.
+- **Responsive frontend:** React + TypeScript interface with a mobile-friendly city search and air-quality panel.
+
+The displayed index is explicitly the **US EPA AQI scale**. It is **not India's CPCB National AQI** and is not a ground-monitor station reading. The Open-Meteo air-quality API serves modeled atmospheric composition data; local model coverage and resolution vary. Use official local monitoring and public-health advisories for high-stakes decisions. A nearby modeled grid cell is not a personal exposure monitor.
+
+## What we're building next
+
 - **Personalized daily planner:** recommendations shaped by outdoor conditions, commute, household needs, and preferences.
 - **Indoor air guidance:** practical ventilation, cleaning, and filtration suggestions.
 - **Cleaner commute choices:** compare practical travel alternatives and explain likely trade-offs.
 - **Impact explorer:** transparent estimates of travel emissions avoided, with assumptions shown.
 - **BreatheWise AI assistant:** conversational explanations grounded in available data and safety guidance.
 - **Community view:** shareable, non-identifying local actions and preparedness tips.
+- **Official Indian AQI adapter:** integrate validated CPCB station readings and calculate/report India AQI only when the data and averaging requirements are met.
 
 ## Product principles
 
@@ -30,15 +40,15 @@ BreatheWise AI is a GenAI-powered urban air-quality assistant designed to help f
 | Layer | Technology |
 |---|---|
 | Frontend | React, TypeScript, Vite |
-| Styling | Custom responsive CSS; Tailwind may be introduced with the design system |
+| Styling | Custom responsive CSS |
 | Backend | Python, FastAPI |
-| GenAI | Google Gemini API (server-side integration) |
-| AQI data | Provider adapters; OpenAQ and official CPCB sources where available |
+| Current air-quality data | Open-Meteo Air Quality API |
+| City lookup | Open-Meteo Geocoding API |
+| GenAI | Google Gemini API (planned; server-side integration) |
+| Official Indian monitoring | CPCB station adapter (planned) |
 | Maps | Leaflet / OpenStreetMap (planned) |
 | Database | Supabase (planned; not required for local MVP) |
 | Deployment | Vercel (frontend) + Render (backend) |
-
-Provider availability, API access, licensing, coverage, and rate limits will be verified before integration. This starter version does not claim a live data connection until an adapter is implemented and tested.
 
 ## Repository structure
 
@@ -50,7 +60,7 @@ BreatheWise-AI/
 │   │   ├── api/               # HTTP routes
 │   │   ├── core/              # Configuration and shared utilities
 │   │   ├── schemas/            # Request/response models
-│   │   └── services/           # AQI, Gemini, recommendations, impact
+│   │   └── services/           # Data, Gemini, recommendations, impact
 │   └── tests/
 ├── docs/                      # Architecture and product notes
 ├── .env.example
@@ -107,6 +117,14 @@ npm run dev
 
 Vite prints the local development URL in the terminal.
 
+## API endpoints
+
+- `GET /health` — service health check.
+- `GET /api/locations/search?name=Hyderabad` — city/town lookup.
+- `GET /api/air-quality?latitude=17.385&longitude=78.486` — current modeled conditions, US AQI category, pollutants, timestamp, and source metadata.
+
+The coordinates above are only an example query for Hyderabad; the application does not automatically infer or request a user's precise location.
+
 ## Environment variables
 
 | Variable | Purpose | Required |
@@ -120,20 +138,23 @@ Vite prints the local development URL in the terminal.
 
 Do not put secrets in frontend variables (for example, `VITE_*` variables), because browser-exposed values are public.
 
-## API starter endpoints
+## Data sources and interpretation
 
-- `GET /` — API identity and docs pointer.
-- `GET /health` — service health check.
+- [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api) — modeled current air-quality variables and AQI indices.
+- [Open-Meteo Geocoding API](https://open-meteo.com/en/docs/geocoding-api) — city-name lookup.
+- [CPCB National AQI methodology](https://airquality.cpcb.gov.in/ccr_docs/About_AQI.pdf) — reference for India's AQI categories, pollutant breakpoints, and sub-index method.
 
-AQI, recommendations, impact, and chat endpoints will be added with validated data contracts and source metadata.
+BreatheWise must not relabel a US or European AQI index as CPCB AQI. An official Indian AQI implementation requires compatible pollutant measurements, averaging periods, valid sub-indices, and source attribution.
 
 ## Development roadmap
 
 - [x] Create public repository and starter monorepo.
 - [x] Add FastAPI health endpoint and React/Vite application shell.
+- [x] Add city search and Open-Meteo modeled air-quality API.
+- [x] Show pollutant readings, timestamp, source, and AQI-scale caveat.
 - [x] Document architecture, privacy, and safety boundaries.
-- [ ] Build the responsive dashboard and AQI data states.
-- [ ] Implement and test AQI provider adapters with source attribution.
+- [ ] Add tests for provider failures and API response validation.
+- [ ] Integrate validated CPCB station measurements.
 - [ ] Add Gemini assistant with grounded prompts, safety constraints, and graceful fallback.
 - [ ] Add household profile and personalized routine planner.
 - [ ] Add indoor-air guidance and clean-commute comparison.
