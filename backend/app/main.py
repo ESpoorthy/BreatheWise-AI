@@ -2,13 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.air_quality import router as air_quality_router
-from app.api.guidance import router as guidance_router
 from app.core.config import settings
 
 app = FastAPI(
     title="BreatheWise AI API",
-    description="Location-aware air-quality intelligence and practical household guidance.",
-    version="0.3.0",
+    description="API for location-aware air-quality intelligence and practical guidance.",
+    version="0.2.0",
 )
 
 app.add_middleware(
@@ -20,14 +19,13 @@ app.add_middleware(
 )
 
 app.include_router(air_quality_router)
-app.include_router(guidance_router)
 
 
 @app.get("/", tags=["meta"])
 async def root() -> dict[str, str]:
     return {
         "name": "BreatheWise AI API",
-        "version": "0.3.0",
+        "version": "0.2.0",
         "docs": "/docs",
         "health": "/health",
     }
