@@ -96,5 +96,5 @@ def test_station_freshness_uses_oldest_included_pollutant():
     ], now=now)
     station = result["stations"][0]
     assert station["freshness"] == "stale"
-    assert station["age_hours"] == 4
+    assert station["age_hours"] == 3.5
     assert {p["freshness"] for p in station["pollutants"]} == {"fresh", "stale"}
