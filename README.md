@@ -182,13 +182,13 @@ BreatheWise must not relabel a US or European AQI index as CPCB AQI. An official
 - [x] Add city search and Open-Meteo modeled air-quality API.
 - [x] Show pollutant readings, timestamp, source, and AQI-scale caveat.
 - [x] Document architecture, privacy, and safety boundaries.
-- [ ] Add tests for provider failures and API response validation.
-- [ ] Integrate validated CPCB station measurements.
-- [ ] Add Gemini assistant with grounded prompts, safety constraints, and graceful fallback.
-- [ ] Add household profile and personalized routine planner.
-- [ ] Add indoor-air guidance and clean-commute comparison.
-- [ ] Add transparent emissions-impact calculations.
-- [ ] Add tests, accessibility checks, and deployment configuration.
+- [x] Add tests for provider failures and API response validation.
+- [x] Add isolated CPCB National AQI calculation helpers and methodology tests.\n- [ ] Integrate validated CPCB station measurements.
+- [x] Add Gemini assistant with grounded prompts, safety constraints, and graceful fallback.
+- [x] Add household profile and personalized routine planner.
+- [x] Add indoor-air guidance and clean-commute comparison.
+- [x] Add transparent emissions-impact calculations.
+- [x] Add backend tests and frontend build checks in CI.\n- [ ] Complete accessibility audit and deployment configuration.
 - [ ] Record a demo and document the deployed build.
 
 ## Contributing
