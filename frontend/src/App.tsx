@@ -79,6 +79,34 @@ function App() {
     }
   }
 
+  const [household,setHousehold]=useState("general");
+  const [hasPurifier,setHasPurifier]=useState(false);
+  const [guidance,setGuidance]=useState<any>(null);
+  const [assistantQuestion,setAssistantQuestion]=useState("");
+  const [assistantAnswer,setAssistantAnswer]=useState<any>(null);
+  const [busy,setBusy]=useState(false);
+  const [distance,setDistance]=useState("8");
+  const [trips,setTrips]=useState("10");
+  const [alternative,setAlternative]=useState("metro");
+  const [impact,setImpact]=useState<any>(null);
+
+  async function buildPlan(){
+    if(!air)return;
+    setBusy(true);
+    try{const r=await fetch(`${API_BASE}/api/guidance/daily`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({aqi:air.current.aqi,context:{household,has_air_purifier:hasPurifier}})});if(!r.ok)throw new Error("Guidance unavailable");setGuidance(await r.json());}
+    catch(e){setError(e instanceof Error?e.message:"Guidance unavailable");}finally{setBusy(false);}
+  }
+  async function ask(event:FormEvent<HTMLFormElement>){
+    event.preventDefault();if(assistantQuestion.trim().length<2)return;setBusy(true);
+    try{const r=await fetch(`${API_BASE}/api/assistant/chat`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:assistantQuestion,aqi:air?.current.aqi??null,city:selectedPlace?.name??null,context:{household,has_air_purifier:hasPurifier}})});if(!r.ok)throw new Error("Assistant unavailable");setAssistantAnswer(await r.json());}
+    catch(e){setAssistantAnswer({answer:e instanceof Error?e.message:"Please try again.",mode:"error"});}finally{setBusy(false);}
+  }
+  async function calc(event:FormEvent<HTMLFormElement>){
+    event.preventDefault();
+    try{const r=await fetch(`${API_BASE}/api/impact/estimate`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({distance_km:Number(distance),trips_per_week:Number(trips),weeks:4,alternative})});if(!r.ok)throw new Error("Check commute inputs");setImpact(await r.json());}
+    catch(e){setImpact({error:e instanceof Error?e.message:"Calculation failed"});}
+  }
+
   const categoryClass = air?.current.category.toLowerCase().replace(/[^a-z]+/g, "-") || "";
 
   return (
@@ -183,6 +211,22 @@ function App() {
           <article className="feature-card"><div className="feature-top"><span className="feature-icon">◉</span><span className="feature-index">01</span></div><p className="feature-tag">AIR INTELLIGENCE</p><h3>Know your air</h3><p className="feature-description">Explore city-level pollutant estimates with data source, timestamp, and scale clearly shown.</p></article>
           <article className="feature-card"><div className="feature-top"><span className="feature-icon">⌂</span><span className="feature-index">02</span></div><p className="feature-tag">INDOOR AIR</p><h3>Make home a cleaner-air space</h3><p className="feature-description">Get practical indoor guidance shaped by outdoor conditions and your household.</p></article>
           <article className="feature-card"><div className="feature-top"><span className="feature-icon">↗</span><span className="feature-index">03</span></div><p className="feature-tag">CLEANER ROUTINES</p><h3>Choose a smarter way to move</h3><p className="feature-description">Explore lower-emission travel options without losing sight of time and convenience.</p></article>
+        </div>
+      </section>
+      <section className="explore-section interactive-tools">
+        <div className="section-heading"><div><p className="eyebrow">PERSONALIZED AIR ACTIONS</p><h2>Your household, <em>your air plan.</em></h2></div><p>Practical guidance based on your selected city estimate and household context.</p></div>
+        <div className="tool-card">
+          <div className="tool-controls">
+            <label>Who are you planning for?<select value={household} onChange={e=>setHousehold(e.target.value)}><option value="general">General household</option><option value="children">Children</option><option value="older_adults">Older adults</option><option value="respiratory_sensitive">Respiratory-sensitive member</option></select></label>
+            <label className="check-label"><input type="checkbox" checked={hasPurifier} onChange={e=>setHasPurifier(e.target.checked)}/> I have an air purifier</label>
+            <button className="primary-button" onClick={buildPlan} disabled={!air||busy}>{busy?"Preparing…":"Build my daily plan ↗"}</button>
+          </div>
+          {!air&&<p className="privacy-note">Search for a city above to unlock AQI-aware recommendations.</p>}
+          {guidance&&<div className="guidance-result"><h3>{guidance.category} · Daily plan</h3><p>{guidance.summary}</p>{guidance.actions.map((x:any)=><article className="guidance-item" key={x.title}><strong>{x.title} <small>· {x.when}</small></strong><p>{x.action}</p><small>{x.why}</small></article>)}<p className="privacy-note">{guidance.safety_note}</p></div>}
+        </div>
+        <div className="tool-grid">
+          <article className="tool-card"><p className="feature-tag">GENAI AIR ASSISTANT</p><h3>Ask BreatheWise</h3><form className="stack-form" onSubmit={ask}><label htmlFor="assistant-question">What would you like help with?</label><textarea id="assistant-question" value={assistantQuestion} onChange={e=>setAssistantQuestion(e.target.value)} maxLength={1200} placeholder="How can I reduce indoor pollution today?"/><button className="primary-button" disabled={busy||assistantQuestion.trim().length<2}>Ask assistant ↗</button></form>{assistantAnswer&&<div className="assistant-answer"><p>{assistantAnswer.answer}</p><small>Mode: {assistantAnswer.mode}. {assistantAnswer.notice||""}</small></div>}</article>
+          <article className="tool-card"><p className="feature-tag">LOWER-EMISSION COMMUTE</p><h3>Estimate a travel switch</h3><form className="stack-form" onSubmit={calc}><label>One-way distance (km)<input type="number" min="0.1" max="500" step="0.1" value={distance} onChange={e=>setDistance(e.target.value)} required/></label><label>One-way trips per week<input type="number" min="1" max="21" value={trips} onChange={e=>setTrips(e.target.value)} required/></label><label>Alternative mode<select value={alternative} onChange={e=>setAlternative(e.target.value)}><option value="metro">Metro</option><option value="bus">Bus</option><option value="carpool">Carpool</option><option value="cycle">Cycle</option><option value="walk">Walk</option></select></label><button className="primary-button">Estimate four-week impact ↗</button></form>{impact&&(impact.error?<p role="alert">{impact.error}</p>:<div className="impact-result"><strong>{impact.estimated_kg_co2e_avoided} kg CO₂e</strong><p>Estimated emissions avoided over four weeks versus a single-occupancy car.</p><small>{impact.methodology} {impact.limitations}</small></div>)}</article>
         </div>
       </section>
       <footer>
