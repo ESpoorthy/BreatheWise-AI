@@ -74,3 +74,27 @@ def test_india_station_route_handles_provider_errors(monkeypatch):
         raise HTTPException(status_code=502, detail="provider down")
     monkeypatch.setattr(india_air_quality, "fetch_ogd_records", fake_fetch)
     assert client.get("/api/india/stations?city=Hyderabad").status_code == 502
+
+
+def test_future_dated_station_record_is_rejected():
+    now = datetime(2026, 11, 22, 12, 0, tzinfo=timezone.utc)
+    result = india_air_quality.normalize_station_records([{
+        "state":"Telangana","city":"Hyderabad","station":"A","pollutant_id":"PM10",
+        "pollutant_avg":"88","last_update":"22-11-2026 18:00:00",
+    }], now=now)
+    assert result["stations"] == []
+    assert result["rejected_records"] == 1
+
+
+def test_station_freshness_uses_oldest_included_pollutant():
+    now = datetime(2026, 11, 22, 12, 0, tzinfo=timezone.utc)
+    result = india_air_quality.normalize_station_records([
+        {"state":"Telangana","city":"Hyderabad","station":"A","pollutant_id":"PM10",
+         "pollutant_avg":"88","last_update":"22-11-2026 06:00:00"},
+        {"state":"Telangana","city":"Hyderabad","station":"A","pollutant_id":"PM2.5",
+         "pollutant_avg":"42","last_update":"22-11-2026 17:00:00"},
+    ], now=now)
+    station = result["stations"][0]
+    assert station["freshness"] == "stale"
+    assert station["age_hours"] == 6
+    assert {p["freshness"] for p in station["pollutants"]} == {"fresh", "stale"}

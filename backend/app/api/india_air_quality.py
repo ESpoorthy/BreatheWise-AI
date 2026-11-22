@@ -6,7 +6,7 @@ No National AQI is calculated from a single hourly snapshot.
 from __future__ import annotations
 
 import math
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -72,6 +72,9 @@ def normalize_station_records(records: Any, *, now: datetime | None = None) -> d
         if observed_at is None:
             rejected += 1
             continue
+        if observed_at.astimezone(timezone.utc) - now_utc > timedelta(minutes=15):
+            rejected += 1
+            continue
         key = (state.strip(), city.strip(), station.strip())
         item = grouped.setdefault(key, {
             "state": state.strip(), "city": city.strip(), "station": station.strip(),
@@ -84,17 +87,25 @@ def normalize_station_records(records: Any, *, now: datetime | None = None) -> d
                 item["latitude"], item["longitude"] = lat, lon
         except (TypeError, ValueError):
             pass
-        item["pollutants"][pollutant_id] = {
-            "key": pollutant_id, "label": pollutant[0], "value": value, "unit": pollutant[1],
-        }
+        previous = item["pollutants"].get(pollutant_id)
+        if previous is None or observed_at.isoformat() >= previous["observed_at"]:
+            item["pollutants"][pollutant_id] = {
+                "key": pollutant_id, "label": pollutant[0], "value": value, "unit": pollutant[1],
+                "observed_at": observed_at.isoformat(),
+            }
         if observed_at.isoformat() > item["observed_at"]:
             item["observed_at"] = observed_at.isoformat()
     stations = []
     for item in grouped.values():
-        observed = datetime.fromisoformat(item["observed_at"])
-        age = max(0.0, (now_utc - observed.astimezone(timezone.utc)).total_seconds() / 3600)
-        item["age_hours"] = round(age, 1)
-        item["freshness"] = "fresh" if age <= FRESHNESS_HOURS else "stale"
+        ages = []
+        for pollutant in item["pollutants"].values():
+            observed = datetime.fromisoformat(pollutant["observed_at"])
+            age = max(0.0, (now_utc - observed.astimezone(timezone.utc)).total_seconds() / 3600)
+            pollutant["age_hours"] = round(age, 1)
+            pollutant["freshness"] = "fresh" if age <= FRESHNESS_HOURS else "stale"
+            ages.append(age)
+        item["age_hours"] = round(max(ages, default=0.0), 1)
+        item["freshness"] = "fresh" if item["age_hours"] <= FRESHNESS_HOURS else "stale"
         item["pollutants"] = list(item["pollutants"].values())
         stations.append(item)
     stations.sort(key=lambda item: (item["freshness"] != "fresh", item["station"].casefold()))
