@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from app.main import app
 from app.schemas.guidance import HouseholdContext
-from app.services.guidance import aqi_category,build_daily_guidance,estimate_commute_impact
+from app.services.guidance import aqi_category,build_community_brief,build_daily_guidance,estimate_commute_impact
 
 client=TestClient(app)
 
@@ -32,3 +32,15 @@ def test_chat_fallback_without_key(monkeypatch):
     response=client.post("/api/assistant/chat",json={"message":"How should I plan today?","aqi":120})
     assert response.status_code==200
     assert response.json()["mode"]=="grounded_fallback"
+
+def test_community_brief_scales_with_aqi_and_household():
+    routine=build_community_brief(35)
+    sensitive=build_community_brief(160,"children")
+    assert routine["response_level"]=="routine"
+    assert sensitive["response_level"]=="high_pollution_response"
+    assert sensitive["actions"][0]["title"]=="Use an inclusive communication plan"
+    assert "does not collect names" in sensitive["privacy_note"]
+
+def test_community_endpoint_validates_aqi():
+    assert client.post("/api/community/brief",json={"aqi":800}).status_code==422
+

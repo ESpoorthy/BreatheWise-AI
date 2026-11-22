@@ -2,8 +2,8 @@ import logging
 import httpx
 from fastapi import APIRouter
 from app.core.config import settings
-from app.schemas.guidance import ChatRequest, GuidanceRequest, ImpactRequest
-from app.services.guidance import build_daily_guidance, deterministic_answer, estimate_commute_impact
+from app.schemas.guidance import ChatRequest, CommunityBriefRequest, GuidanceRequest, ImpactRequest
+from app.services.guidance import build_community_brief, build_daily_guidance, deterministic_answer, estimate_commute_impact
 
 router=APIRouter(prefix="/api",tags=["personalized guidance"])
 logger=logging.getLogger(__name__)
@@ -16,6 +16,10 @@ async def daily_guidance(request: GuidanceRequest) -> dict:
 async def indoor_guidance(request: GuidanceRequest) -> dict:
     plan=build_daily_guidance(request.aqi,request.context)
     return {"aqi":request.aqi,"aqi_scale":"US EPA AQI","recommendations":[x for x in plan["actions"] if x["when"] in {"At home","Cooking"}],"safety_note":plan["safety_note"]}
+
+@router.post("/community/brief")
+async def community_brief(request: CommunityBriefRequest) -> dict:
+    return build_community_brief(request.aqi,request.household)
 
 @router.post("/impact/estimate")
 async def impact_estimate(request: ImpactRequest) -> dict:

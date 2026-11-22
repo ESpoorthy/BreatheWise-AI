@@ -23,3 +23,7 @@ class ImpactRequest(BaseModel):
     trips_per_week: int = Field(default=5, ge=1, le=21)
     weeks: int = Field(default=4, ge=1, le=52)
     alternative: Literal["bus", "metro", "cycle", "walk", "carpool"]
+
+class CommunityBriefRequest(BaseModel):
+    aqi: int = Field(ge=0, le=500)
+    household: Literal["general", "children", "older_adults", "respiratory_sensitive"] = "general"
