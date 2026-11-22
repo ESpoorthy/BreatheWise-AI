@@ -6,17 +6,26 @@ BreatheWise AI is a GenAI-powered urban air-quality assistant designed to help f
 
 > **Important:** BreatheWise AI provides general air-quality information and practical guidance. It is not a medical device, emergency service, or substitute for advice from a qualified healthcare professional or official public-health authority.
 
-## Working in this starter build
+## Chosen challenge vertical
+
+**Challenge 6 — Urban Air Quality Assistant.** The primary persona is a household member planning safer everyday routines during urban pollution and winter-smog episodes. The app asks the user to choose a city and optionally describe household needs; it does not silently collect device location or personal medical records.
+
+## Working features
 
 - **City search:** look up a city or town without granting device-location permission.
 - **Current modeled air quality:** fetch an Open-Meteo current estimate for the selected coordinates.
 - **Pollutant details:** view PM2.5, PM10, nitrogen dioxide, sulphur dioxide, ozone, and carbon monoxide where returned by the provider.
 - **Source transparency:** show provider attribution, model timestamp, data type, and limitations.
 - **Responsive frontend:** React + TypeScript interface with a mobile-friendly city search and air-quality panel.
+- **Household-aware daily plan:** recommendations adapt to the selected AQI estimate, household profile (general, children, older adults, or respiratory-sensitive), and purifier availability.
+- **Indoor-air guidance:** practical source-control, ventilation-timing, and filtration suggestions with a clear safety note.
+- **GenAI assistant:** server-side Gemini integration grounded in the selected modeled AQI and supplied household context, with deterministic fallback if Gemini is not configured or unavailable.
+- **Commute impact estimator:** compares a single-occupancy-car baseline with bus, metro, carpool, cycling, or walking using disclosed illustrative passenger-kilometre factors.
+- **Input validation:** Pydantic request models constrain AQI, commute distance, travel frequency, and household options.
 
 The displayed index is explicitly the **US EPA AQI scale**. It is **not India's CPCB National AQI** and is not a ground-monitor station reading. The Open-Meteo air-quality API serves modeled atmospheric composition data; local model coverage and resolution vary. Use official local monitoring and public-health advisories for high-stakes decisions. A nearby modeled grid cell is not a personal exposure monitor.
 
-## What we're building next
+## Planned enhancements
 
 - **Personalized daily planner:** recommendations shaped by outdoor conditions, commute, household needs, and preferences.
 - **Indoor air guidance:** practical ventilation, cleaning, and filtration suggestions.
@@ -44,7 +53,7 @@ The displayed index is explicitly the **US EPA AQI scale**. It is **not India's 
 | Backend | Python, FastAPI |
 | Current air-quality data | Open-Meteo Air Quality API |
 | City lookup | Open-Meteo Geocoding API |
-| GenAI | Google Gemini API (planned; server-side integration) |
+| GenAI | Google Gemini API (server-side; deterministic fallback) |
 | Official Indian monitoring | CPCB station adapter (planned) |
 | Maps | Leaflet / OpenStreetMap (planned) |
 | Database | Supabase (planned; not required for local MVP) |
@@ -117,11 +126,27 @@ npm run dev
 
 Vite prints the local development URL in the terminal.
 
+## Approach and decision logic
+
+1. The user searches for a city; the app retrieves coordinates from Open-Meteo Geocoding. Precise device location is not requested.
+2. The backend fetches modeled current pollutant data and the provider's US AQI estimate. It returns source, model, timestamp, units, and limitations.
+3. The user selects household context. Deterministic rules use the supplied AQI band and household flags to suggest lower-exposure routines and indoor source-control steps.
+4. The assistant receives only the user question and the context explicitly selected in the app. Gemini is called from the backend; if it is unavailable, the app returns a rule-based answer.
+5. The commute estimator compares a car baseline with a selected alternative using published-in-code illustrative factors. The result is an estimate of transport CO₂e, not a claim that local ambient AQI will improve by that amount.
+
+## Assumptions and limitations
+
+- The current air-quality feed is a modeled Open-Meteo estimate using the **US EPA AQI scale**. It is not an official CPCB station observation, not an Indian National AQI calculation, and not a personal exposure reading.
+- Household categories are planning preferences, not diagnoses. The application does not collect diagnoses or provide medical treatment advice.
+- Commute factors are illustrative averages and do not account for the exact vehicle, occupancy, grid mix, route, or lifecycle emissions. They are shown for comparative education only.
+- The Gemini key is optional for local fallback operation and must be configured only as a backend secret.
+- Community features, push alerts, and official CPCB station integration remain future work; they are not represented as currently available.
+
 ## API endpoints
 
 - `GET /health` — service health check.
 - `GET /api/locations/search?name=Hyderabad` — city/town lookup.
-- `GET /api/air-quality?latitude=17.385&longitude=78.486` — current modeled conditions, US AQI category, pollutants, timestamp, and source metadata.
+- `GET /api/air-quality?latitude=17.385&longitude=78.486` — current modeled conditions, US AQI category, pollutants, timestamp, and source metadata.\n- `POST /api/guidance/daily` — household-aware daily recommendations.\n- `POST /api/guidance/indoor` — indoor-air recommendations.\n- `POST /api/assistant/chat` — Gemini-backed assistant with deterministic fallback.\n- `POST /api/impact/estimate` — transparent illustrative commute-emissions estimate.
 
 The coordinates above are only an example query for Hyderabad; the application does not automatically infer or request a user's precise location.
 
