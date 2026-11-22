@@ -170,7 +170,8 @@ Do not put secrets in frontend variables (for example, `VITE_*` variables), beca
 
 - [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api) — modeled current air-quality variables and AQI indices.
 - [Open-Meteo Geocoding API](https://open-meteo.com/en/docs/geocoding-api) — city-name lookup.
-- [CPCB National AQI methodology](https://airquality.cpcb.gov.in/ccr_docs/About_AQI.pdf) — reference for India's AQI categories, pollutant breakpoints, and sub-index method.
+- [CPCB Air Quality Resources](https://app.cpcbccr.com/ccr_docs) — official National AQI methodology, station list, and CAAQMS protocol.
+- [Open Government Data: Real time AQI from various locations](https://www.data.gov.in/resource/real-time-air-quality-index-various-locations) — official catalogue for hourly station-level data; confirm a supported API before automated integration.
 
 BreatheWise must not relabel a US or European AQI index as CPCB AQI. An official Indian AQI implementation requires compatible pollutant measurements, averaging periods, valid sub-indices, and source attribution.
 
