@@ -90,11 +90,11 @@ def test_station_freshness_uses_oldest_included_pollutant():
     now = datetime(2026, 11, 22, 12, 0, tzinfo=timezone.utc)
     result = india_air_quality.normalize_station_records([
         {"state":"Telangana","city":"Hyderabad","station":"A","pollutant_id":"PM10",
-         "pollutant_avg":"88","last_update":"22-11-2026 06:00:00"},
+         "pollutant_avg":"88","last_update":"22-11-2026 14:00:00"},
         {"state":"Telangana","city":"Hyderabad","station":"A","pollutant_id":"PM2.5",
          "pollutant_avg":"42","last_update":"22-11-2026 17:00:00"},
     ], now=now)
     station = result["stations"][0]
     assert station["freshness"] == "stale"
-    assert station["age_hours"] == 6
+    assert station["age_hours"] == 4
     assert {p["freshness"] for p in station["pollutants"]} == {"fresh", "stale"}
