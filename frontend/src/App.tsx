@@ -89,6 +89,10 @@ function App() {
   const [trips,setTrips]=useState("10");
   const [alternative,setAlternative]=useState("metro");
   const [impact,setImpact]=useState<any>(null);
+  const [community,setCommunity]=useState<any>(null);
+  const [communityBusy,setCommunityBusy]=useState(false);
+  const [alertThreshold,setAlertThreshold]=useState("100");
+
 
   async function buildPlan(){
     if(!air)return;
@@ -100,6 +104,17 @@ function App() {
     event.preventDefault();if(assistantQuestion.trim().length<2)return;setBusy(true);
     try{const r=await fetch(`${API_BASE}/api/assistant/chat`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:assistantQuestion,aqi:air?.current.aqi??null,city:selectedPlace?.name??null,context:{household,has_air_purifier:hasPurifier}})});if(!r.ok)throw new Error("Assistant unavailable");setAssistantAnswer(await r.json());}
     catch(e){setAssistantAnswer({answer:e instanceof Error?e.message:"Please try again.",mode:"error"});}finally{setBusy(false);}
+  }
+
+  async function loadCommunityBrief(){
+    if(!air)return;
+    setCommunityBusy(true);
+    try{
+      const r=await fetch(`${API_BASE}/api/community/brief`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({aqi:air.current.aqi,household})});
+      if(!r.ok)throw new Error("Community brief unavailable");
+      setCommunity(await r.json());
+    }catch(e){setError(e instanceof Error?e.message:"Community brief unavailable");}
+    finally{setCommunityBusy(false);}
   }
   async function calc(event:FormEvent<HTMLFormElement>){
     event.preventDefault();
@@ -227,6 +242,25 @@ function App() {
         <div className="tool-grid">
           <article className="tool-card"><p className="feature-tag">GENAI AIR ASSISTANT</p><h3>Ask BreatheWise</h3><form className="stack-form" onSubmit={ask}><label htmlFor="assistant-question">What would you like help with?</label><textarea id="assistant-question" value={assistantQuestion} onChange={e=>setAssistantQuestion(e.target.value)} maxLength={1200} placeholder="How can I reduce indoor pollution today?"/><button className="primary-button" disabled={busy||assistantQuestion.trim().length<2}>Ask assistant ↗</button></form>{assistantAnswer&&<div className="assistant-answer"><p>{assistantAnswer.answer}</p><small>Mode: {assistantAnswer.mode}. {assistantAnswer.notice||""}</small></div>}</article>
           <article className="tool-card"><p className="feature-tag">LOWER-EMISSION COMMUTE</p><h3>Estimate a travel switch</h3><form className="stack-form" onSubmit={calc}><label>One-way distance (km)<input type="number" min="0.1" max="500" step="0.1" value={distance} onChange={e=>setDistance(e.target.value)} required/></label><label>One-way trips per week<input type="number" min="1" max="21" value={trips} onChange={e=>setTrips(e.target.value)} required/></label><label>Alternative mode<select value={alternative} onChange={e=>setAlternative(e.target.value)}><option value="metro">Metro</option><option value="bus">Bus</option><option value="carpool">Carpool</option><option value="cycle">Cycle</option><option value="walk">Walk</option></select></label><button className="primary-button">Estimate four-week impact ↗</button></form>{impact&&(impact.error?<p role="alert">{impact.error}</p>:<div className="impact-result"><strong>{impact.estimated_kg_co2e_avoided} kg CO₂e</strong><p>Estimated emissions avoided over four weeks versus a single-occupancy car.</p><small>{impact.methodology} {impact.limitations}</small></div>)}</article>
+        </div>
+      </section>
+      <section className="explore-section community-section">
+        <div className="section-heading"><div><p className="eyebrow">BEYOND ONE HOUSEHOLD</p><h2>Cleaner air is <em>a community effort.</em></h2></div><p>Turn a city snapshot into practical, privacy-conscious steps for shared spaces.</p></div>
+        <div className="tool-grid">
+          <article className="tool-card">
+            <p className="feature-tag">COMMUNITY PREPAREDNESS</p><h3>Build a neighbourhood action brief</h3>
+            <p className="privacy-note">Uses the selected modeled AQI and household category. No names, addresses or health records are collected.</p>
+            <button className="primary-button" onClick={loadCommunityBrief} disabled={!air||communityBusy}>{communityBusy?"Preparing…":"Generate community brief ↗"}</button>
+            {!air&&<p className="privacy-note">Search for a city to generate a brief.</p>}
+            {community&&<div className="guidance-result"><h3>{community.response_level.replaceAll("_"," ")}</h3>{community.actions.map((x:any)=><article className="guidance-item" key={x.title}><strong>{x.title}</strong><p>{x.action}</p></article>)}<p className="privacy-note">{community.source_note}</p></div>}
+          </article>
+          <article className="tool-card">
+            <p className="feature-tag">ON-SCREEN AQI THRESHOLD</p><h3>Set a personal check-in level</h3>
+            <label htmlFor="aqi-threshold">Show a reminder when the selected city's modeled AQI reaches</label>
+            <select id="aqi-threshold" value={alertThreshold} onChange={e=>setAlertThreshold(e.target.value)}><option value="50">50 · Above Good</option><option value="100">100 · Above Moderate</option><option value="150">150 · Above Unhealthy for sensitive groups</option><option value="200">200 · Above Unhealthy</option></select>
+            {air&&air.current.aqi>=Number(alertThreshold)?<p className="threshold-alert" role="status">Your selected threshold is reached. Consider reviewing your daily plan and checking official local advisories.</p>:<p className="privacy-note">{air?"The selected city's current model estimate is below this threshold.":"Search for a city to evaluate your threshold."}</p>}
+            <p className="privacy-note">This is an on-screen check when you view the app, not a background or push notification. Refresh the city data to check again.</p>
+          </article>
         </div>
       </section>
       <footer>

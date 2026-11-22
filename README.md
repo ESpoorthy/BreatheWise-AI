@@ -21,6 +21,8 @@ BreatheWise AI is a GenAI-powered urban air-quality assistant designed to help f
 - **Indoor-air guidance:** practical source-control, ventilation-timing, and filtration suggestions with a clear safety note.
 - **GenAI assistant:** server-side Gemini integration grounded in the selected modeled AQI and supplied household context, with deterministic fallback if Gemini is not configured or unavailable.
 - **Commute impact estimator:** compares a single-occupancy-car baseline with bus, metro, carpool, cycling, or walking using disclosed illustrative passenger-kilometre factors.
+- **Community preparedness brief:** generates non-identifying shared-space actions from the selected AQI and household category.
+- **On-screen AQI threshold:** lets users choose a threshold and shows a reminder when the currently loaded city estimate reaches it. This is not a background or push notification.
 - **Input validation:** Pydantic request models constrain AQI, commute distance, travel frequency, and household options.
 
 The displayed index is explicitly the **US EPA AQI scale**. It is **not India's CPCB National AQI** and is not a ground-monitor station reading. The Open-Meteo air-quality API serves modeled atmospheric composition data; local model coverage and resolution vary. Use official local monitoring and public-health advisories for high-stakes decisions. A nearby modeled grid cell is not a personal exposure monitor.
@@ -147,6 +149,7 @@ Vite prints the local development URL in the terminal.
 - `GET /health` — service health check.
 - `GET /api/locations/search?name=Hyderabad` — city/town lookup.
 - `GET /api/air-quality?latitude=17.385&longitude=78.486` — current modeled conditions, US AQI category, pollutants, timestamp, and source metadata.\n- `POST /api/guidance/daily` — household-aware daily recommendations.\n- `POST /api/guidance/indoor` — indoor-air recommendations.\n- `POST /api/assistant/chat` — Gemini-backed assistant with deterministic fallback.\n- `POST /api/impact/estimate` — transparent illustrative commute-emissions estimate.
+- `POST /api/community/brief` — non-identifying community preparedness actions.
 
 The coordinates above are only an example query for Hyderabad; the application does not automatically infer or request a user's precise location.
 
