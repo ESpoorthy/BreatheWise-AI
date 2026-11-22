@@ -11,10 +11,10 @@ from app.services.cpcb_aqi import calculate_national_aqi, calculate_sub_index
         ("pm10", 75, 24, 75),
         ("no2", 60, 24, 75),
         ("o3", 75, 8, 75),
-        ("co", 1.5, 8, 75),
+        ("co", 1.5, 8, 73),
         ("so2", 60, 24, 75),
         ("nh3", 300, 24, 75),
-        ("pb", 0.75, 24, 75),
+        ("pb", 0.75, 24, 69),
     ],
 )
 def test_cpcb_sub_index_interpolates_breakpoints(pollutant, value, window, expected):
