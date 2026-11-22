@@ -55,3 +55,21 @@ The helper is in `backend/app/services/cpcb_aqi.py`, with tests in `backend/test
 - [ ] Confirm a supported official machine-readable endpoint and terms.
 - [ ] Implement station ingestion, quality checks, rolling averages, and station metadata.
 - [ ] Add freshness and station-distance indicators.
+
+
+## Optional data.gov.in station adapter
+
+An optional read-only route is now implemented at `GET /api/india/stations?city=Hyderabad`. It uses the data.gov.in resource identifier `3b01bcb8-0b14-4abf-b6f2-c1bfd384ba69` and requires `DATA_GOV_IN_API_KEY` as a backend environment secret.
+
+Important qualification: the public OGD catalogue currently lists the resource's sourced webservice/API as unavailable/NA. The resource ID and standard API pattern are referenced by community implementations, but that does not establish a guaranteed current service contract. Treat this adapter as an opt-in integration candidate: configure it only after verifying that your own data.gov.in key can access the resource, that the response schema is current, and that usage terms/rate limits are acceptable.
+
+The route:
+- requests city-filtered records from the server (the API key is never sent to the browser);
+- validates station identity, pollutant ID, finite non-negative concentration, timestamp, and coordinate ranges;
+- groups records by state/city/station and labels readings older than three hours as stale;
+- reports invalid record counts;
+- deliberately returns `national_aqi: null`, because a single hourly snapshot cannot satisfy CPCB's 8/24-hour moving-average and valid-coverage requirements.
+
+The dashboard shows this data in a separate station-observation panel, never blending it with the Open-Meteo modeled US AQI card. If the key is absent or the endpoint is unavailable, the UI explains that station data cannot currently be loaded.
+
+Automated tests cover response normalization, malformed readings, stale records, missing credentials, and upstream failures. These tests use mocked provider responses; they do not prove that the external API is currently reachable.

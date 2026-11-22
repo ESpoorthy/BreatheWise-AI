@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-2.5-flash"
     aqi_provider: str | None = None
     openaq_api_key: str | None = None
+    data_gov_in_api_key: str | None = None
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
 
     @field_validator("cors_origins", mode="before")

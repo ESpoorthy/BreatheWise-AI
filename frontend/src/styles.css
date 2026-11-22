@@ -20,3 +20,18 @@ h1{font-size:clamp(58px,6.5vw,90px);line-height:.99;letter-spacing:-5.8px;margin
 @media(max-width:800px){.page-shell{padding:0 5%}.hero{padding:55px 0;gap:32px}.hero-art{height:340px}.feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.feature-card{min-height:230px}}
 @media(max-width:540px){.topbar{height:70px}.nav-note{font-size:7px;padding:8px 10px}.hero{padding:44px 0 50px}.hero-art{height:285px;border-radius:24px 24px 24px 6px}.sun-disc{width:140px;height:140px}.leaf-shape{font-size:120px}.floating-card{right:10px;bottom:50px}.search-row{flex-direction:column}.search-row .primary-button{width:100%}.air-panel{padding:17px;border-radius:14px}.pollutant-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.explore-section{padding:62px 0}.feature-grid{grid-template-columns:1fr}.feature-card{min-height:205px}.tool-card{padding:18px}.data-note{padding:15px;align-items:flex-start}.note-label{display:none}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
+
+/* Official Indian station observations stay separate from modeled AQI. */
+.india-station-panel{margin:22px 0 28px;padding:28px;border:1px solid #dce8df;border-radius:18px;background:#f4f8f2;box-shadow:0 12px 34px rgba(24,59,50,.045)}
+.india-station-panel .panel-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.secondary-button{min-height:44px;padding:12px 17px;border:1px solid #d5e2d7;border-radius:10px;background:#fff;color:#234b39;font-size:11px;font-weight:700}
+.secondary-button:hover:not(:disabled){border-color:#efb394;background:#fff8f3}
+.india-note{margin:8px 0;color:#69796f;font-size:11px;line-height:1.75}.india-note a{color:#d86639;text-decoration:underline;text-underline-offset:3px}
+.india-error{padding:13px 15px;border-radius:10px;background:#fff0e7;color:#94472b;font-size:11px;line-height:1.7}
+.station-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:17px}
+.station-card{padding:18px;border:1px solid #e1e9df;border-radius:13px;background:#fff}
+.station-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.station-heading strong{display:block;color:#183b32;font-size:12px;line-height:1.5}.station-heading small,.station-card>small{display:block;margin-top:4px;color:#78867e;font-size:9px}
+.freshness{white-space:nowrap;padding:6px 9px;border-radius:999px;font-size:9px;font-weight:700}.freshness.fresh{background:#e9f4e9;color:#3e7749}.freshness.stale{background:#fff0e7;color:#a65735}
+.station-pollutants{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.station-pollutants>div{padding:10px;border-radius:9px;background:#f7f8f4}.station-pollutants span,.station-pollutants small{display:block;color:#7b887f;font-size:8px}.station-pollutants strong{display:block;margin:5px 0;color:#183b32;font-size:17px}
+@media(max-width:700px){.india-station-panel{padding:17px}.india-station-panel .panel-heading{align-items:flex-start;flex-direction:column}.station-grid{grid-template-columns:1fr}.station-pollutants{grid-template-columns:repeat(2,minmax(0,1fr))}}

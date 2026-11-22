@@ -11,6 +11,14 @@ type Place = {
   timezone?: string | null;
 };
 
+type IndiaStationResponse = {
+  city: string; source: string; source_url: string; data_type: string;
+  national_aqi: number | null; national_aqi_note: string;
+  stations: { state:string; city:string; station:string; latitude:number|null; longitude:number|null;
+    observed_at:string; age_hours:number; freshness:"fresh"|"stale";
+    pollutants:{key:string;label:string;value:number;unit:string}[] }[];
+};
+
 type AirQuality = {
   location: { latitude: number; longitude: number; timezone?: string | null };
   current: {
@@ -62,6 +70,7 @@ function App() {
     setLoadingAir(true);
     setError("");
     setAir(null);
+    setIndiaStations(null);setIndiaError("");
     try {
       const params = new URLSearchParams({
         latitude: String(place.latitude),
@@ -93,7 +102,23 @@ function App() {
   const [community,setCommunity]=useState<any>(null);
   const [communityBusy,setCommunityBusy]=useState(false);
   const [alertThreshold,setAlertThreshold]=useState("100");
+  const [indiaStations,setIndiaStations]=useState<IndiaStationResponse|null>(null);
+  const [indiaLoading,setIndiaLoading]=useState(false);
+  const [indiaError,setIndiaError]=useState("");
 
+
+  async function loadIndiaStations(){
+    if(!selectedPlace)return;
+    setIndiaLoading(true);setIndiaError("");setIndiaStations(null);
+    try{
+      const response=await fetch(`${API_BASE}/api/india/stations?city=${encodeURIComponent(selectedPlace.name)}`);
+      const payload=await response.json().catch(()=>null);
+      if(!response.ok)throw new Error(payload?.detail||"Official station data is unavailable.");
+      setIndiaStations(payload as IndiaStationResponse);
+      if(!payload?.stations?.length)setIndiaError("No station readings were returned for this city. Try a larger nearby city.");
+    }catch(error){setIndiaError(error instanceof Error?error.message:"Unable to load Indian station data.");}
+    finally{setIndiaLoading(false);}
+  }
 
   async function buildPlan(){
     if(!air)return;
@@ -209,6 +234,29 @@ function App() {
               </div>
             </>
           )}
+        </section>
+      )}
+
+      {selectedPlace&&(
+        <section className="india-station-panel" aria-live="polite">
+          <div className="panel-heading">
+            <div><p className="eyebrow">INDIA · OFFICIAL MONITORING NETWORK</p><h2>Station observations</h2></div>
+            <button className="secondary-button" onClick={loadIndiaStations} disabled={indiaLoading}>{indiaLoading?"Loading…":"Check Indian stations ↗"}</button>
+          </div>
+          <p className="india-note">Separate from the modeled US AQI estimate above. These are hourly station pollutant averages from the Government of India OGD resource; they are not a personal exposure reading.</p>
+          {indiaLoading&&<p className="loading-message">Looking for monitoring stations in {selectedPlace.name}…</p>}
+          {indiaError&&<p className="india-error" role="status">{indiaError}</p>}
+          {indiaStations&&<>
+            <p className="india-note"><strong>{indiaStations.source}</strong> · {indiaStations.stations.length} station(s) returned. <a href={indiaStations.source_url} target="_blank" rel="noreferrer">Dataset details ↗</a></p>
+            <p className="india-note">{indiaStations.national_aqi_note}</p>
+            <div className="station-grid">{indiaStations.stations.map(station=>(
+              <article className="station-card" key={station.state+station.city+station.station}>
+                <div className="station-heading"><div><strong>{station.station}</strong><small>{station.city}, {station.state}</small></div><span className={station.freshness==="fresh"?"freshness fresh":"freshness stale"}>{station.freshness==="fresh"?"Fresh":"Stale"} · {station.age_hours}h</span></div>
+                <small>Last update: {station.observed_at}</small>
+                <div className="station-pollutants">{station.pollutants.map(p=><div key={p.key}><span>{p.label}</span><strong>{p.value.toFixed(1)}</strong><small>{p.unit}</small></div>)}</div>
+              </article>
+            ))}</div>
+          </>}
         </section>
       )}
 

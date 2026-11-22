@@ -146,9 +146,15 @@ Vite prints the local development URL in the terminal.
 
 ## API endpoints
 
+- `GET /api/india/stations?city=Hyderabad` — optional hourly station-level observations from the Government of India OGD/CPCB dataset. Requires the backend-only `DATA_GOV_IN_API_KEY`. Does not calculate National AQI from a single hourly snapshot.
+
 - `GET /health` — service health check.
 - `GET /api/locations/search?name=Hyderabad` — city/town lookup.
-- `GET /api/air-quality?latitude=17.385&longitude=78.486` — current modeled conditions, US AQI category, pollutants, timestamp, and source metadata.\n- `POST /api/guidance/daily` — household-aware daily recommendations.\n- `POST /api/guidance/indoor` — indoor-air recommendations.\n- `POST /api/assistant/chat` — Gemini-backed assistant with deterministic fallback.\n- `POST /api/impact/estimate` — transparent illustrative commute-emissions estimate.
+- `GET /api/air-quality?latitude=17.385&longitude=78.486` — current modeled conditions, US AQI category, pollutants, timestamp, and source metadata.
+- `POST /api/guidance/daily` — household-aware daily recommendations.
+- `POST /api/guidance/indoor` — indoor-air recommendations.
+- `POST /api/assistant/chat` — Gemini-backed assistant with deterministic fallback.
+- `POST /api/impact/estimate` — transparent illustrative commute-emissions estimate.
 - `POST /api/community/brief` — non-identifying community preparedness actions.
 
 The coordinates above are only an example query for Hyderabad; the application does not automatically infer or request a user's precise location.
@@ -161,6 +167,7 @@ The coordinates above are only an example query for Hyderabad; the application d
 | `GEMINI_MODEL` | Gemini model identifier | No; configured default |
 | `AQI_PROVIDER` | Selected AQI provider adapter | No |
 | `OPENAQ_API_KEY` | OpenAQ credential, if required by current API access | Provider-dependent |
+| `DATA_GOV_IN_API_KEY` | Server-side data.gov.in API key for optional Indian station observations | Only for India station data |
 | `CORS_ORIGINS` | Comma-separated allowed frontend origins | No; local default |
 | `VITE_API_BASE_URL` | Public backend base URL | No; local default |
 
@@ -183,12 +190,14 @@ BreatheWise must not relabel a US or European AQI index as CPCB AQI. An official
 - [x] Show pollutant readings, timestamp, source, and AQI-scale caveat.
 - [x] Document architecture, privacy, and safety boundaries.
 - [x] Add tests for provider failures and API response validation.
-- [x] Add isolated CPCB National AQI calculation helpers and methodology tests.\n- [ ] Integrate validated CPCB station measurements.
+- [x] Add isolated CPCB National AQI calculation helpers and methodology tests.
+- [x] Add optional data.gov.in/CPCB station-observation adapter with server-side key, validation, and freshness labels.\n- [ ] Verify API access and terms with an active data.gov.in key; add CPCB National AQI only from compliant rolling averages.
 - [x] Add Gemini assistant with grounded prompts, safety constraints, and graceful fallback.
 - [x] Add household profile and personalized routine planner.
 - [x] Add indoor-air guidance and clean-commute comparison.
 - [x] Add transparent emissions-impact calculations.
-- [x] Add backend tests and frontend build checks in CI.\n- [ ] Complete accessibility audit and deployment configuration.
+- [x] Add backend tests and frontend build checks in CI.
+- [ ] Complete accessibility audit and deployment configuration.
 - [ ] Record a demo and document the deployed build.
 
 ## Contributing
